@@ -764,11 +764,16 @@ void I_SetVideoMode(const IVideoMode& requested_mode)
 
 	IWindow* window = I_GetWindow();
 
-	window->setMode(validated_mode);
-	I_ForceUpdateGrab();
-
-	// [SL] 2011-11-30 - Prevent the player's view angle from moving
-	I_FlushInput();
+	static bool initial_boot_done = false;
+    if (!initial_boot_done) {
+        window->setMode(validated_mode);
+        I_ForceUpdateGrab();
+        initial_boot_done = true;
+    } else {
+        // Just flush the input frames safely 
+        // Skip calling SDL window recalculation and centering logic entirely
+        I_FlushInput();
+    }
 
 	// Set up the primary and emulated surfaces
 	primary_surface = window->getPrimarySurface();
